@@ -1,0 +1,159 @@
+* {
+    margin: 0;
+    padding: 0
+}
+
+.card {
+    width: 700px;
+    background-color: #efefef;
+    border: none;
+    cursor: pointer;
+    transition: all 0.5s
+}
+
+.image img {
+    transition: all 0.5s
+}
+
+.card:hover .image img {
+    transform: scale(1.5)
+}
+
+.btn {
+    height: 50px;
+    width: 150px;
+    border-radius: 10px;
+}
+
+.name {
+    font-size: 22px;
+    font-weight: bold
+}
+
+.idd {
+    font-size: 14px;
+    font-weight: 600
+}
+
+.idd1 {
+    font-size: 12px
+}
+
+.number {
+    font-size: 22px;
+    font-weight: bold
+}
+
+.follow {
+    font-size: 12px;
+    font-weight: 500;
+    color: #444444
+}
+
+.btn1 {
+    height: 40px;
+    width: 150px;
+    border: none;
+    background-color: #000;
+    color: #aeaeae;
+    font-size: 15px
+}
+
+.text span {
+    font-size: 13px;
+    color: #545454;
+    font-weight: 500
+}
+
+.icons i {
+    font-size: 19px
+}
+
+hr .new1 {
+    border: 1px solid
+}
+
+.join {
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+}
+
+.date {
+    background-color: #0062CC;
+}
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #0062cc;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #0062cc;
+}
+
+
+.btnContact {
+    border-radius: 17px;
+    box-sizing: border-box;
+    background-color: blue;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: Graphik,-apple-system,system-ui,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
+    font-size: 15px;
+    line-height: 1;
+    overflow: visible;
+    padding: 12px 12px 12px 12px;
+    position: relative;
+    text-align: center;
+    text-transform: none;
+    transition: all 80ms ease-in-out;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    width: fit-content;
+}
+
+.btnContact:hover{
+    background-color: #0039D7;
+}
+.button-26:disabled {
+    opacity: .5;
+}
+
+.button-26:focus {
+    outline: 0;
+}
+
+.button-26:hover {
+    background-color: #0A46E4;
+    border-color: #0A46E4;
+}
+
+.button-26:active {
+    background-color: #0039D7;
+    border-color: #0039D7;
+}
