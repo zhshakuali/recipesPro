@@ -3,10 +3,12 @@ package com.recipes.controller;
 import com.recipes.entity.Recipe;
 import com.recipes.entity.UserEntity;
 import com.recipes.repository.RecipeRepository;
-import com.recipes.repository.UserRepository;
 import com.recipes.service.RecipeService;
 import com.recipes.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,97 +16,118 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
+@RequiredArgsConstructor
 public class AdminController {
-    @Autowired
-    UserService userService;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    RecipeRepository recipeRepository;
-    @Autowired
-    RecipeService recipeService;
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final RecipeService recipeService;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/admin")
-    public String admin(@RequestParam("id") Integer id, Model model){
-        if(userRepository.findRolesById(id).equals("ADMIN")){
-            List<UserEntity> userEntityList = userRepository.findAll();
-            List<Recipe>  recipeList = recipeRepository.findAll();
+    public String admin(
+            @RequestParam("id") Integer id,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "5") Integer size,
+            Model model
+    ) {
+        if (userService.findRolesById(id).contains("ADMIN")) {
+            Page<UserEntity> userEntityList = userService.findAllByUsernameNotLike("admin", page, size);
+            Page<Recipe> recipes = recipeService.findAll(page, size);
             model.addAttribute("userId", id);
             model.addAttribute("users", userEntityList);
-            model.addAttribute("recipes", recipeList);
+            model.addAttribute("recipes", recipes);
             return "successadmin";
         } else {
-            Optional<UserEntity> userEntity = userRepository.findById(id);
-            List<Recipe> recipeList = recipeRepository.findAllByUploaderUsername(userEntity.get().getUsername());
+            UserEntity userEntity = userService.findById(id);
+            Page<Recipe> recipes = recipeService.findAllByUploaderUsername(userEntity.getUsername(), page, size);
 
-            model.addAttribute("userId", userEntity.get().getId());
-            model.addAttribute("username", userEntity.get().getUsername());
-            model.addAttribute("roles", userEntity.get().getRoles());
-            model.addAttribute("recipes", recipeList);
-            model.addAttribute("id", userEntity.get().getId());
+            model.addAttribute("userId", userEntity.getId());
+            model.addAttribute("username", userEntity.getUsername());
+            model.addAttribute("roles", userEntity.getRoles());
+            model.addAttribute("id", userEntity.getId());
+            model.addAttribute("recipes", recipes);
 
             return "successuser";
         }
     }
 
-    @GetMapping("/updateUser/{id}")
-    public String updateUser(@PathVariable(value="id") Integer id, Model model){
+    @GetMapping("/admin/users")
+    public String showUsers(
+            @RequestParam("id") Integer id,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "5") Integer size,
+            Model model
+    ) {
+        Page<UserEntity> userEntityList = userService.findAllByUsernameNotLike("admin", page, size);
+        model.addAttribute("userId", id);
+        model.addAttribute("users", userEntityList);
+        return admin(id, page, size, model);
+    }
+
+    @PutMapping("/users/{id}")
+    public String updateUser(@PathVariable(value = "id") Integer id, @RequestParam("userId") String adminId, Model model) {
         UserEntity user = userService.findById(id);
         model.addAttribute("user", user);
+        model.addAttribute("userId", adminId);
         return "updateUser";
     }
 
-    @GetMapping("/deleteUser/{id}")
-    public String deleteUser(@PathVariable(value="id") Integer id){
+    @DeleteMapping("/users/{id}")
+    public String deleteUser(@PathVariable(value = "id") Integer id, @RequestParam("userId") Integer adminId) {
         this.userService.deleteUserById(id);
-        return "redirect:/admin";
+        return "redirect:/admin?id=" + adminId;
     }
 
     @GetMapping("/admin/add/user")
-    public String showNewEmployeeForm(Model model) {
+    public String showNewEmployeeForm(Model model, @RequestParam("userId") Integer adminId) {
         UserEntity userEntity = new UserEntity();
         model.addAttribute("user", userEntity);
+        model.addAttribute("userId", adminId);
         return "addUser";
     }
 
     @PostMapping("/admin/add")
-    public String saveUser(@ModelAttribute("user") UserEntity userEntity, Model model){
+    public String saveUser(@ModelAttribute("user") UserEntity userEntity, @RequestParam("userId") Integer adminId, Model model) {
         userEntity.setActive(true);
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-        userRepository.save(userEntity);
-        return "redirect:/admin";
+        userService.save(userEntity);
+        return "redirect:/admin?id=" + adminId;
     }
 
     @PostMapping("/admin/add/recipe")
-    public String saveRecipe(@ModelAttribute("recipe") Recipe recipe, Model model){
+    public String saveRecipe(@ModelAttribute("recipe") Recipe recipe, @RequestParam("userId") Integer adminId, Model model) {
         recipe.setDate(LocalDateTime.now());
-        recipe.setUploaderUsername(recipeRepository.findById(recipe.getId()).get().getUploaderUsername());
-        recipe.setUserEntity(recipeRepository.findById(recipe.getId()).get().getUserEntity());
-        recipeRepository.save(recipe);
-        return "redirect:/admin";
+        Recipe recipeInDb = recipeService.findById(recipe.getId());
+        recipe.setUploaderUsername(recipeInDb.getUploaderUsername());
+        recipe.setUserEntity(recipeInDb.getUserEntity());
+        recipeService.save(recipe);
+        return "redirect:/admin?id=" + adminId;
     }
 
-    @GetMapping("/updateRecipe/{id}")
-    public String updateRecipe(@PathVariable(value="id") Integer id, Model model){
+    @PutMapping("/recipes/{id}")
+    public String updateRecipe(@PathVariable(value = "id") Integer id, @RequestParam("userId") Integer userId, Model model) {
         Recipe recipe = recipeService.findById(id);
         model.addAttribute("recipe", recipe);
         return "updateRecipe";
     }
 
-    @PostMapping("/deleteRecipe/{id}")
-    public String delete(@PathVariable(value="id") Integer id){
-        this.recipeService.deleteRecipeById(id);
-        return "redirect:/admin";
+    @DeleteMapping("/recipes/{id}")
+    public String deleteRecipe(@PathVariable(value = "id") Integer id, @RequestParam("userId") Integer adminId, Model model) {
+        this.recipeService.deleteById(id);
+        return "redirect:/admin?id=" + adminId;
     }
 
-    @GetMapping("/deleteRecipe/{id}")
-    public String deleteRecipe(@PathVariable(value = "id") Integer id){
-        this.recipeRepository.deleteById(id);
-        return "redirect:/admin";
+    @GetMapping("/admin/recipes")
+    public String getRecipes(
+            Model model,
+            @RequestParam("id") Integer id,
+            @RequestParam(name = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(name = "size", required = false, defaultValue = "5") Integer size
+    ) {
+        Page<Recipe> recipes = recipeService.findAll(page, size);
+        model.addAttribute("userId", id);
+        model.addAttribute("recipes", recipes);
+        return admin(id, page, size, model);
     }
 }

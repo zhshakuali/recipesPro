@@ -1,34 +1,56 @@
 package com.recipes.service;
 
 import com.recipes.entity.Recipe;
-import com.recipes.entity.UserEntity;
+import com.recipes.exceptions.RecipeNotFoundException;
 import com.recipes.repository.RecipeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class RecipeService {
-    @Autowired //
-    RecipeRepository recipeRepository;
+    private final RecipeRepository recipeRepository;
 
-    public Recipe save(Recipe recipe){
-        Optional<Recipe> recipeSave = Optional.of(recipeRepository.findById(recipe.getId()).get());
+    public void save(String uploaderUsername, String name, String category, String description) {
+        Recipe recipe = Recipe.builder()
+                .name(name)
+                .category(category)
+                .description(description)
+                .uploaderUsername(uploaderUsername)
+                .build();
 
-        recipeRepository.save(recipeSave.get());
-        return recipeSave.get();
+        recipeRepository.save(recipe);
     }
 
-    public Recipe findById(Integer id){
-        Optional<Recipe> recipe = recipeRepository.findById(id);
-        return recipe.get();
+    public Page<Recipe> findAllByUploaderUsername(String username, Integer offset, Integer size) {
+        Pageable pageable = PageRequest.of(offset, size);
+        return recipeRepository
+                .findAllByUploaderUsername(username, pageable);
     }
-    public void deleteRecipeById(Integer id){
+
+    public void save(Recipe recipe) {
+        Recipe recipeToSave = recipeRepository.findById(recipe.getId()).orElseThrow(RecipeNotFoundException::new);
+
+        recipeRepository.save(recipeToSave);
+    }
+
+    public Recipe findById(Integer id) {
+        return recipeRepository
+                .findById(id)
+                .orElseThrow(RecipeNotFoundException::new);
+    }
+
+    public void deleteById(Integer id) {
         recipeRepository.deleteById(id);
     }
 
+    public Page<Recipe> findAll(int offset, int size) {
+        Pageable pageRequest = PageRequest.of(offset, size);
+        return recipeRepository.findAll(pageRequest);
+    }
 }

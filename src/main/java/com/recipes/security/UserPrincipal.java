@@ -16,7 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails {
-    @Autowired
     private UserEntity user;
 
     @Override

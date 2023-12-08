@@ -37,7 +37,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="recipe: ${recipes}">
+                <tr th:each="recipe: ${recipes.content}">
                     <td th:text="${recipe.id}"></td>
                     <td th:text="${recipe.uploaderUsername}"></td>
                     <td th:text="${recipe.name}"></td>
@@ -47,12 +47,33 @@
                 </tbody>
             </table>
 
+            <div th:if="${recipes.totalPages > 1}">
+                <ul class="pagination">
+                    <li th:class="${recipes.first ? 'page-item disabled' : 'page-item'}">
+                        <a class="page-link" th:href="@{'/recipes?username=' + ${username}}">First</a>
+                    </li>
+                    <li th:class="${recipes.hasPrevious() ? 'page-item' : 'page-item disabled'}">
+                        <a class="page-link" th:href="@{'/recipes?username=' + ${username} + '&page=' + ${recipes.number - 1}}">Previous</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(0, recipes.totalPages - 1)}" th:class="${recipes.number == i ? 'page-item active' : 'page-item'}">
+                        <a class="page-link" th:href="@{'/recipes?username=' + ${username} + '&page=' + ${i}}">[[${i + 1}]]</a>
+                    </li>
+                    <li th:class="${recipes.hasNext() ? 'page-item' : 'page-item disabled'}">
+                        <a class="page-link" th:href="@{'/recipes?username=' + ${username} + '&page=' + ${recipes.number + 1}}">Next</a>
+                    </li>
+                    <li th:class="${recipes.last ? 'page-item disabled' : 'page-item'}">
+                        <a class="page-link" th:href="@{'/recipes?username=' + ${username} + '&page=' + ${recipes.totalPages - 1}}">Last</a>
+                    </li>
+                </ul>
+            </div>
+
             <div>
-                <form action="/add/recipe" method="get">
+                <form action="/recipes/add" method="get">
                     <input type="hidden" name="username" th:value="${username}">
                     <input type="submit" value="Add recipe" name="btnSubmit" class="btnContact"/>
                 </form>
             </div>
+
             <br>
             <div>
                 <form th:action="@{/logout}" method="post">

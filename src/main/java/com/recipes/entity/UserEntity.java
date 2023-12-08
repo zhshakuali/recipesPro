@@ -17,18 +17,18 @@ import java.util.Set;
 @Entity
 @Table(name = "users")
 public class UserEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnore
+    @Column(name="user_id")
     private Integer id;
 
-
+    @Column(name = "username")
     private String username;
 
     @NotBlank()
     @Size(min = 8)
-
+    @Column(name="password")
     private String password;
 
 
@@ -37,6 +37,6 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
 
-
+    @Column(name="active")
     private boolean active;
 }

@@ -12,9 +12,11 @@ import lombok.Data;
 
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "recipes")
+@Builder
 public class Recipe {
 
     @Id
@@ -39,10 +41,10 @@ public class Recipe {
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     private UserEntity userEntity;
 
-    public Recipe(String uploaderUsername, String name, String category, String description){
+    public Recipe(String uploaderUsername, String name, String category, String description) {
         this.uploaderUsername = uploaderUsername;
         this.name = name;
         this.category = category;
